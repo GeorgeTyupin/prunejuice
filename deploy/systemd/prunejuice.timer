@@ -1,0 +1,16 @@
+[Unit]
+Description=Run prunejuice every 5 minutes
+Documentation=https://github.com/GeorgeTyupin/prunejuice
+
+[Timer]
+# First run shortly after boot, then every 5 minutes.
+OnBootSec=2min
+OnUnitActiveSec=5min
+# Spread load if many machines share this unit; also survives missed runs
+# (e.g. the box was asleep) by firing immediately on resume.
+RandomizedDelaySec=30
+Persistent=true
+Unit=prunejuice.service
+
+[Install]
+WantedBy=timers.target

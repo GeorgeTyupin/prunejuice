@@ -1,0 +1,39 @@
+[Unit]
+Description=prunejuice — check disk usage and free space if needed
+Documentation=https://github.com/GeorgeTyupin/prunejuice
+# Don't spin if things are on fire; the timer will try again.
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/prunejuice -config /etc/prunejuice/config.yaml
+
+# Secrets: prefer an environment file over putting the token in config.yaml.
+# Create /etc/prunejuice/prunejuice.env (chmod 600) with:
+#   PRUNEJUICE_TELEGRAM_BOT_TOKEN=123456:ABC...
+#   PRUNEJUICE_TELEGRAM_CHAT_ID=-1001234567890
+EnvironmentFile=-/etc/prunejuice/prunejuice.env
+
+# The cleanup commands (journalctl --vacuum, apt clean, docker prune) need
+# root; run as root but drop everything not required.
+User=root
+
+# --- Hardening -------------------------------------------------------------
+# prunejuice only reads disk stats and runs the cleanup commands you enabled.
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+RestrictSUIDSGID=true
+# Writable paths the cleanup steps and the log file legitimately need. Adjust
+# to match your config's log.file location.
+ReadWritePaths=/var/log/journal /var/cache/apt /var/lib/docker /var/log/prunejuice
+
+# Keep the tool's own footprint small.
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,70 @@
+# prunejuice — example configuration.
+#
+# Copy to /etc/prunejuice/config.yaml and edit. Secrets (Telegram) are better
+# supplied via environment variables so this file can be committed safely:
+#   PRUNEJUICE_TELEGRAM_BOT_TOKEN
+#   PRUNEJUICE_TELEGRAM_CHAT_ID
+#   PRUNEJUICE_HOST
+
+# Filesystem / mount point to monitor.
+mount_path: /
+
+# Trigger cleanup when used space reaches this percentage (0 < x <= 100).
+threshold_percent: 85
+
+# How often to check when running with -daemon. Ignored in one-shot mode
+# (which is the recommended systemd-timer deployment). Accepts Go duration
+# strings ("5m", "30s", "1h") or a plain number of seconds.
+check_interval: 5m
+
+# Hard cap on every individual cleanup command. If a command runs longer than
+# this it is killed, so a hung command can never wedge the tool.
+command_timeout: 60s
+
+# Machine label included in alerts. Leave empty to use the system hostname.
+host: ""
+
+log:
+  # debug | info | warn | error
+  level: info
+  # Emit structured JSON instead of text.
+  json: false
+  # Optional log file. Empty = stdout only (fine under systemd/journald).
+  # When set, logs rotate so prunejuice never fills the disk it protects.
+  file: /var/log/prunejuice/prunejuice.log
+  # Rotate the active file at this size...
+  max_size_mb: 10
+  # ...and keep at most this many rotated files (⇒ bounded at ~40 MB here).
+  max_backups: 3
+
+telegram:
+  # false ⇒ "log-only mode": alerts are written to the log but not sent anywhere.
+  # This is also exactly how the library behaves by default.
+  enabled: true
+  # Prefer the env vars above; these inline values are a fallback.
+  bot_token: ""
+  chat_id: 0
+
+# Cleanup steps, tried in order. After each enabled step prunejuice re-checks
+# free space and stops as soon as usage is back under threshold_percent.
+# Toggle `enabled` to include/exclude a step without a rebuild.
+steps:
+  - name: journal-vacuum
+    command: journalctl
+    args: ["--vacuum-time=7d"]
+    enabled: true
+
+  - name: apt-clean
+    command: apt
+    args: ["clean"]
+    enabled: true
+
+  # DESTRUCTIVE: removes stopped containers, unused networks, dangling images
+  # and build cache — which may belong to other stacks on this host. Disabled
+  # by default; enable deliberately. Automatically skipped if docker is not
+  # installed (requires_binary).
+  - name: docker-prune
+    command: docker
+    args: ["system", "prune", "-f"]
+    enabled: false
+    requires_binary: docker

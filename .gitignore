@@ -1,0 +1,24 @@
+# Build artifacts
+/bin/
+*.exe
+*.test
+*.out
+
+# Local config & secrets — never commit real tokens
+config.yaml
+*.env
+prunejuice.env
+
+# Logs
+*.log
+*.log.*
+
+# Editor / OS cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Go coverage
+coverage.txt
+coverage.html
