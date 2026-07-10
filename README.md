@@ -1,5 +1,7 @@
 # prunejuice 🧹
 
+[English](README.md) | [Русский](README.ru.md)
+
 [![CI](https://github.com/GeorgeTyupin/prunejuice/actions/workflows/ci.yml/badge.svg)](https://github.com/GeorgeTyupin/prunejuice/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/GeorgeTyupin/prunejuice.svg)](https://pkg.go.dev/github.com/GeorgeTyupin/prunejuice)
 [![Go Report Card](https://goreportcard.com/badge/github.com/GeorgeTyupin/prunejuice)](https://goreportcard.com/report/github.com/GeorgeTyupin/prunejuice)
