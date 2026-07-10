@@ -21,4 +21,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unit tests for the decision logic, config loading, log rotation, and the
   command runner's timeout.
 
+### Changed
+- Layout: implementation packages moved under `internal/`; the module now
+  exposes a single public package (`prunejuice`). YAML config files live in
+  `configs/`.
+- Config loading uses [cleanenv](https://github.com/ilyakaznacheev/cleanenv)
+  (YAML + env in one struct) and is consolidated into a single file.
+
 [Unreleased]: https://github.com/GeorgeTyupin/prunejuice/commits/main

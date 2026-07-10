@@ -123,7 +123,7 @@ commands run in the host's namespaces via `nsenter -t 1`, so `journalctl`,
 `apt`, and `docker` act on the host rather than the container.
 
 ```bash
-cp config.docker.yaml ./config.docker.yaml   # already in the repo; edit if needed
+# edit configs/config.docker.yaml if needed (threshold, enable docker-prune, ...)
 cat > prunejuice.env <<'EOF'
 PRUNEJUICE_TELEGRAM_BOT_TOKEN=123456789:AA...
 PRUNEJUICE_TELEGRAM_CHAT_ID=123456789
@@ -147,8 +147,8 @@ namespaces.
 > A lighter, Docker-socket-only variant (prune Docker + monitor disk, no
 > `privileged`) is documented in the compose file.
 
-See [`config.docker.yaml`](config.docker.yaml) for the container config, which
-wraps each cleanup step in `nsenter`.
+See [`configs/config.docker.yaml`](configs/config.docker.yaml) for the container
+config, which wraps each cleanup step in `nsenter`.
 
 ---
 
@@ -163,7 +163,7 @@ instead of the file:
 | `PRUNEJUICE_TELEGRAM_CHAT_ID` | `telegram.chat_id` |
 | `PRUNEJUICE_HOST` | `host` |
 
-See [`config.example.yaml`](config.example.yaml) for a fully commented example.
+See [`configs/config.example.yaml`](configs/config.example.yaml) for a fully commented example.
 The essentials:
 
 ```yaml
@@ -267,27 +267,34 @@ A runnable example lives in [`examples/library`](examples/library).
 `prunejuice` follows clean architecture — dependencies point **inward**, and the
 core has no idea Telegram or gopsutil exist:
 
+The module exposes exactly **one public package** (`prunejuice`, the facade);
+everything else lives under `internal/` so the implementation can evolve without
+breaking library users.
+
 ```
-cmd/prunejuice      ← wiring: flags, signals, config → adapters → engine
+cmd/prunejuice              ← wiring: flags, signals, config → adapters → engine
       │
-      ├── config    ← YAML + env loading (CLI only)
-      ├── logging   ← slog + size-capped rotation (CLI only)
+      ├── internal/config   ← YAML + env loading via cleanenv (CLI only)
+      ├── internal/logging  ← slog + size-capped rotation (CLI only)
       │
-prunejuice (facade) ← library API: New(), RunOnce(), Run(), functional options
+prunejuice (facade)         ← the one public package: New(), RunOnce(), Run(),
+      │                        functional options, re-exported domain types
       │
-   service          ← the use case: threshold decision, step orchestration
-      │                (pure; depends only on domain — this is what's unit-tested)
+   internal/service         ← the use case: threshold decision, step orchestration
+      │                        (pure; depends only on domain — this is unit-tested)
       │
-   domain           ← entities (DiskUsage, CleanupStep, Report, Alert) + port
-                       interfaces (DiskProber, Runner, Notifier). Zero deps.
+   internal/domain          ← entities (DiskUsage, CleanupStep, Report, Alert) +
+                              port interfaces (DiskProber, Runner, Notifier). Zero deps.
       ▲
-   adapter/*        ← implement the ports: disk (gopsutil), command (os/exec),
-                       telegram, notify (noop/log/multi)
+   internal/adapter/*       ← implement the ports: disk (gopsutil), command (os/exec),
+                              telegram, notify (noop/log/multi)
+
+configs/                    ← YAML config files (config.example.yaml, config.docker.yaml)
 ```
 
 Because the decision logic lives behind interfaces, the entire "should we clean,
 what should we run, do we alert" flow is tested with in-memory fakes — no real
-disk, no shelling out, no network. See [`service/engine_test.go`](service/engine_test.go).
+disk, no shelling out, no network. See [`internal/service/engine_test.go`](internal/service/engine_test.go).
 
 ---
 

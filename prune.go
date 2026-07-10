@@ -31,11 +31,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/GeorgeTyupin/prunejuice/adapter/command"
-	"github.com/GeorgeTyupin/prunejuice/adapter/disk"
-	"github.com/GeorgeTyupin/prunejuice/adapter/notify"
-	"github.com/GeorgeTyupin/prunejuice/domain"
-	"github.com/GeorgeTyupin/prunejuice/service"
+	"github.com/GeorgeTyupin/prunejuice/internal/adapter/command"
+	"github.com/GeorgeTyupin/prunejuice/internal/adapter/disk"
+	"github.com/GeorgeTyupin/prunejuice/internal/adapter/notify"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/service"
 )
 
 // Re-exported domain types so library users can depend on a single package.

@@ -10,7 +10,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/GeorgeTyupin/prunejuice/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
 )
 
 // DefaultTimeout is used when a non-positive timeout is supplied.

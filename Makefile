@@ -34,7 +34,7 @@ clean: ## Remove build artifacts
 	rm -rf $(BIN_DIR)
 
 run-once: build ## Build and run a single check with the example config
-	$(BIN_DIR)/$(BINARY) -config config.example.yaml
+	$(BIN_DIR)/$(BINARY) -config configs/config.example.yaml
 
 print-config: build ## Print the default config
 	$(BIN_DIR)/$(BINARY) -print-config

@@ -7,7 +7,7 @@ import (
 
 	gopsutil "github.com/shirou/gopsutil/v3/disk"
 
-	"github.com/GeorgeTyupin/prunejuice/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
 )
 
 // Prober measures real disk usage via gopsutil.

@@ -23,7 +23,7 @@ Why this over a daemon:
 ```bash
 sudo install -m 0755 bin/prunejuice /usr/local/bin/prunejuice
 sudo mkdir -p /etc/prunejuice /var/log/prunejuice
-sudo cp config.example.yaml /etc/prunejuice/config.yaml   # then edit it
+sudo cp configs/config.example.yaml /etc/prunejuice/config.yaml   # then edit it
 
 # Secrets (recommended over putting the token in config.yaml):
 sudo tee /etc/prunejuice/prunejuice.env >/dev/null <<'EOF'

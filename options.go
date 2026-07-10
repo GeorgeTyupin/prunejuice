@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/GeorgeTyupin/prunejuice/adapter/notify"
-	"github.com/GeorgeTyupin/prunejuice/adapter/telegram"
-	"github.com/GeorgeTyupin/prunejuice/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/adapter/notify"
+	"github.com/GeorgeTyupin/prunejuice/internal/adapter/telegram"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
 )
 
 // Option customises a Pruner built with New.

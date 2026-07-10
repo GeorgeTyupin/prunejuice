@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GeorgeTyupin/prunejuice/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
 )
 
 // --- fakes -----------------------------------------------------------------

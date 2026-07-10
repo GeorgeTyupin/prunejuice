@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/GeorgeTyupin/prunejuice/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
 )
 
 // Params configures an Engine. The three ports (Prober, Runner, Notifier) are

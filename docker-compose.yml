@@ -34,7 +34,7 @@ services:
       # Host root, read-only, so the disk check measures the host filesystem.
       - /:/host:ro
       # The container's config.
-      - ./config.docker.yaml:/etc/prunejuice/config.yaml:ro
+      - ./configs/config.docker.yaml:/etc/prunejuice/config.yaml:ro
 
     env_file:
       - prunejuice.env

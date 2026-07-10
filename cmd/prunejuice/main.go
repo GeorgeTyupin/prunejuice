@@ -11,11 +11,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/GeorgeTyupin/prunejuice"
-	"github.com/GeorgeTyupin/prunejuice/config"
-	"github.com/GeorgeTyupin/prunejuice/logging"
+	"github.com/GeorgeTyupin/prunejuice/internal/config"
+	"github.com/GeorgeTyupin/prunejuice/internal/logging"
 )
 
 // Version is overridden at build time via -ldflags "-X main.Version=...".
@@ -39,7 +37,7 @@ func run() int {
 		return 0
 	}
 	if *printConfig {
-		if err := printDefaultConfig(); err != nil {
+		if err := config.WriteDefault(os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "prunejuice:", err)
 			return 1
 		}
@@ -122,19 +120,3 @@ func run() int {
 func isShutdown(err error) bool {
 	return err == context.Canceled || err == context.DeadlineExceeded
 }
-
-func printDefaultConfig() error {
-	out, err := yaml.Marshal(config.Default())
-	if err != nil {
-		return fmt.Errorf("marshal default config: %w", err)
-	}
-	fmt.Print(configHeader)
-	fmt.Print(string(out))
-	return nil
-}
-
-const configHeader = `# prunejuice configuration.
-# Secrets can be supplied via environment variables instead of this file:
-#   PRUNEJUICE_TELEGRAM_BOT_TOKEN, PRUNEJUICE_TELEGRAM_CHAT_ID, PRUNEJUICE_HOST
-#
-`

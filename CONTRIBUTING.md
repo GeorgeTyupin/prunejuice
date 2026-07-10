@@ -25,12 +25,14 @@ You need Go 1.23+.
 
 ## Architecture in one paragraph
 
-Dependencies point inward (clean architecture). `domain` holds entities and the
-port interfaces and has **zero** external dependencies. `service` is the pure
-use case (the decision logic) and depends only on `domain`. Adapters under
-`adapter/` implement the ports (gopsutil, os/exec, Telegram). The root
-`prunejuice` package is the library facade; `cmd/prunejuice` is the CLI wiring.
-**Please keep new external dependencies out of `domain` and `service`.**
+Dependencies point inward (clean architecture). Everything except the public
+facade lives under `internal/`. `internal/domain` holds entities and the port
+interfaces and has **zero** external dependencies. `internal/service` is the
+pure use case (the decision logic) and depends only on `internal/domain`.
+Adapters under `internal/adapter/` implement the ports (gopsutil, os/exec,
+Telegram). The root `prunejuice` package is the one public package (the library
+facade); `cmd/prunejuice` is the CLI wiring. **Please keep new external
+dependencies out of `internal/domain` and `internal/service`.**
 
 ### Adding a notifier
 
@@ -42,8 +44,8 @@ type Notifier interface {
 }
 ```
 
-Put it under `adapter/<name>` and, if it's broadly useful, add a `With<Name>`
-option in `options.go`.
+Put it under `internal/adapter/<name>` and, if it's broadly useful, add a
+`With<Name>` option in `options.go`.
 
 ### Adding a cleanup step
 

@@ -7,7 +7,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/GeorgeTyupin/prunejuice/domain"
+	"github.com/GeorgeTyupin/prunejuice/internal/domain"
 )
 
 // Noop discards every alert. It is the default notifier so that a library user
