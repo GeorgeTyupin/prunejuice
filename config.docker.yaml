@@ -1,0 +1,49 @@
+# prunejuice config for running INSIDE a container that maintains the HOST.
+#
+# Two things make host maintenance work from a container:
+#   1. The host root is bind-mounted read-only at /host, so the disk check
+#      measures the host filesystem (mount_path: /host).
+#   2. Cleanup commands are wrapped in `nsenter -t 1 ...`, which runs the
+#      HOST's own journalctl / apt / docker in the host namespaces. This
+#      requires the container to run with `pid: host` and `privileged: true`
+#      (see docker-compose.yml).
+#
+# Secrets come from the environment (prunejuice.env):
+#   PRUNEJUICE_TELEGRAM_BOT_TOKEN, PRUNEJUICE_TELEGRAM_CHAT_ID, PRUNEJUICE_HOST
+# Set PRUNEJUICE_HOST to your server name — otherwise alerts show the random
+# container hostname.
+
+mount_path: /host          # host root, bind-mounted read-only
+threshold_percent: 85
+check_interval: 5m         # container runs as a daemon, so this tick is used
+command_timeout: 60s
+
+log:
+  level: info
+  json: false
+  file: ""                 # empty ⇒ stdout ⇒ visible via `docker logs`
+
+telegram:
+  enabled: true            # token & chat id come from env vars above
+  bot_token: ""
+  chat_id: 0
+
+# Each step runs the HOST binary via nsenter into PID 1's namespaces
+# (-m mount, -u uts, -i ipc, -n net, -p pid).
+steps:
+  - name: journal-vacuum
+    command: nsenter
+    args: ["-t", "1", "-m", "-u", "-i", "-n", "-p", "--", "journalctl", "--vacuum-time=7d"]
+    enabled: true
+
+  - name: apt-clean
+    command: nsenter
+    args: ["-t", "1", "-m", "-u", "-i", "-n", "-p", "--", "apt-get", "clean"]
+    enabled: true
+
+  # DESTRUCTIVE: prunes the HOST's Docker. Disabled by default.
+  - name: docker-prune
+    command: nsenter
+    args: ["-t", "1", "-m", "-u", "-i", "-n", "-p", "--", "docker", "system", "prune", "-f"]
+    enabled: false
+    requires_binary: nsenter

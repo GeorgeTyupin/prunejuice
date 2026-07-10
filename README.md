@@ -115,6 +115,43 @@ discussed in detail in [`deploy/systemd/README.md`](deploy/systemd/README.md).**
 
 ---
 
+## Run in Docker
+
+prunejuice can run as a long-lived container that maintains its **host**. The
+trick: the host root is bind-mounted read-only for the disk check, and cleanup
+commands run in the host's namespaces via `nsenter -t 1`, so `journalctl`,
+`apt`, and `docker` act on the host rather than the container.
+
+```bash
+cp config.docker.yaml ./config.docker.yaml   # already in the repo; edit if needed
+cat > prunejuice.env <<'EOF'
+PRUNEJUICE_TELEGRAM_BOT_TOKEN=123456789:AA...
+PRUNEJUICE_TELEGRAM_CHAT_ID=123456789
+PRUNEJUICE_HOST=sof-tunnel
+EOF
+chmod 600 prunejuice.env
+
+docker compose up -d --build
+docker compose logs -f
+```
+
+The provided [`docker-compose.yml`](docker-compose.yml) runs the container with
+`pid: host` and `privileged: true` — required for `nsenter` to enter the host
+namespaces.
+
+> ⚠️ **Security:** a privileged, `pid: host` container is effectively root on
+> the host. That's the cost of doing host maintenance from a container (a
+> comparable trust level to running the systemd unit as root, but a different
+> attack surface). If you don't specifically need Docker, the
+> [systemd timer](deploy/systemd) deployment is simpler and less privileged.
+> A lighter, Docker-socket-only variant (prune Docker + monitor disk, no
+> `privileged`) is documented in the compose file.
+
+See [`config.docker.yaml`](config.docker.yaml) for the container config, which
+wraps each cleanup step in `nsenter`.
+
+---
+
 ## Configuration
 
 `prunejuice` reads YAML. Secrets may be supplied via environment variables

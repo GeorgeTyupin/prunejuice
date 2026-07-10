@@ -1,0 +1,59 @@
+# prunejuice as a long-running container that maintains its HOST.
+#
+#   docker compose up -d --build
+#   docker compose logs -f
+#
+# Create prunejuice.env next to this file first (chmod 600):
+#   PRUNEJUICE_TELEGRAM_BOT_TOKEN=123456789:AA...
+#   PRUNEJUICE_TELEGRAM_CHAT_ID=123456789
+#   PRUNEJUICE_HOST=sof-tunnel
+
+services:
+  prunejuice:
+    build:
+      context: .
+      args:
+        VERSION: docker-compose
+    image: prunejuice:latest
+    container_name: prunejuice
+    restart: unless-stopped
+
+    # --- host access (required for the default nsenter-based config) --------
+    # pid:host + privileged let `nsenter -t 1` enter the host's namespaces so
+    # journalctl/apt/docker run against the HOST, not the container.
+    #
+    # ⚠️  A privileged, pid:host container is effectively root on the host.
+    #     That is the price of doing host maintenance from a container; it is a
+    #     comparable trust level to running the systemd unit as root, but the
+    #     attack surface differs. Prefer the systemd-timer deployment if you
+    #     don't specifically need Docker.
+    pid: "host"
+    privileged: true
+
+    volumes:
+      # Host root, read-only, so the disk check measures the host filesystem.
+      - /:/host:ro
+      # The container's config.
+      - ./config.docker.yaml:/etc/prunejuice/config.yaml:ro
+
+    env_file:
+      - prunejuice.env
+
+    command: ["-config", "/etc/prunejuice/config.yaml", "-daemon"]
+
+# --------------------------------------------------------------------------
+# LIGHTER, DOCKER-ONLY ALTERNATIVE (no privileged / pid:host)
+#
+# If you only want to prune Docker (not journald/apt) and monitor disk, drop
+# `privileged`/`pid:host`, mount the docker socket instead of using nsenter,
+# and use a config whose only enabled step is a plain `docker system prune -f`:
+#
+#   volumes:
+#     - /:/host:ro
+#     - /var/run/docker.sock:/var/run/docker.sock
+#   # + a config with mount_path: /host and a docker-prune step using
+#   #   command: docker (image must then include the docker CLI).
+#
+# This is safer but cannot vacuum the host journal or clean apt — which were
+# the actual space hogs in the sof-tunnel incident.
+# --------------------------------------------------------------------------

@@ -1,0 +1,16 @@
+# Keep the build context tiny and reproducible.
+.git
+.github
+bin/
+*.log
+*.log.*
+*.env
+prunejuice.env
+config.yaml
+docs/
+examples/
+deploy/
+*.md
+.DS_Store
+.idea/
+.vscode/

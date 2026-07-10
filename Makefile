@@ -4,7 +4,7 @@ BIN_DIR     := bin
 VERSION     ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS     := -s -w -X main.Version=$(VERSION)
 
-.PHONY: all build install test race lint fmt vet tidy clean run-once print-config help
+.PHONY: all build install test race lint fmt vet tidy clean run-once print-config docker-build docker-up docker-logs help
 
 all: lint test build ## Lint, test and build
 
@@ -38,6 +38,15 @@ run-once: build ## Build and run a single check with the example config
 
 print-config: build ## Print the default config
 	$(BIN_DIR)/$(BINARY) -print-config
+
+docker-build: ## Build the Docker image (prunejuice:latest)
+	docker build --build-arg VERSION=$(VERSION) -t prunejuice:$(VERSION) -t prunejuice:latest .
+
+docker-up: ## Build & start the container via docker compose (needs prunejuice.env)
+	docker compose up -d --build
+
+docker-logs: ## Follow the container logs
+	docker compose logs -f
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
